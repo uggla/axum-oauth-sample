@@ -1,17 +1,18 @@
 use anyhow::Context;
 use axum::{
+    Extension, Router,
     extract::Query,
     http::StatusCode,
     response::{IntoResponse, Redirect},
     routing::get,
-    Extension, Router,
 };
 
+use oauth2::reqwest;
 use oauth2::{
-    basic::BasicClient, AuthorizationCode, CsrfToken, PkceCodeChallenge, Scope, TokenResponse,
+    AuthUrl, AuthorizationCode, ClientId, ClientSecret, CsrfToken, PkceCodeChallenge, RedirectUrl,
+    Scope, TokenResponse, TokenUrl,
 };
-use oauth2::{reqwest::async_http_client, PkceCodeVerifier};
-use oauth2::{AuthUrl, ClientId, ClientSecret, RedirectUrl, TokenUrl};
+use oauth2::{PkceCodeVerifier, basic::BasicClient};
 
 use crate::{
     constants::{
@@ -19,6 +20,7 @@ use crate::{
     },
     misc::error::AppError,
     models::AuthProvider,
+    routes::api::auth::ClientSettings,
 };
 use axum_extra::extract::cookie::{Cookie, CookieJar, SameSite};
 use sqlx::SqlitePool;
@@ -41,7 +43,7 @@ pub fn discord_auth_router() -> Router {
         .route("/api/auth/discord/callback", get(callback))
 }
 
-fn get_oauth_client() -> Result<BasicClient, anyhow::Error> {
+fn get_client_settings() -> Result<ClientSettings, AppError> {
     let client_id = ClientId::new(
         std::env::var("DISCORD_CLIENT_ID")
             .context("Missing the DISCORD_CLIENT_ID environment variable")?,
@@ -61,14 +63,24 @@ fn get_oauth_client() -> Result<BasicClient, anyhow::Error> {
     let redirect_url = RedirectUrl::new(format!("{base_url}/api/auth/discord/callback"))
         .context("Invalid redirect url")?;
 
-    let client = BasicClient::new(client_id, Some(client_secret), auth_url, Some(token_url))
-        .set_redirect_uri(redirect_url);
-
-    Ok(client)
+    Ok(ClientSettings {
+        client_id,
+        client_secret,
+        auth_url,
+        token_url,
+        redirect_url,
+    })
 }
 
 async fn login() -> Result<impl IntoResponse, AppError> {
-    let client = get_oauth_client().context("Failed to create discord auth client")?;
+    let client_settings = get_client_settings()?;
+    let client = BasicClient::new(client_settings.client_id)
+        .set_client_secret(client_settings.client_secret)
+        .set_auth_uri(client_settings.auth_url)
+        .set_token_uri(client_settings.token_url)
+        // Set the URL the user will be redirected to after the authorization process.
+        .set_redirect_uri(client_settings.redirect_url);
+
     let (pkce_code_challenge, pkce_code_verifier) = PkceCodeChallenge::new_random_sha256();
 
     let (authorize_url, csrf_state) = client
@@ -126,16 +138,28 @@ async fn callback(
         return Ok(StatusCode::BAD_REQUEST.into_response());
     }
 
-    let client = get_oauth_client().context("Failed to create discord auth client")?;
+    let client_settings = get_client_settings()?;
+    let client = BasicClient::new(client_settings.client_id)
+        .set_client_secret(client_settings.client_secret)
+        .set_auth_uri(client_settings.auth_url)
+        .set_token_uri(client_settings.token_url)
+        // Set the URL the user will be redirected to after the authorization process.
+        .set_redirect_uri(client_settings.redirect_url);
+
+    let http_client = reqwest::ClientBuilder::new()
+        // Following redirects opens the client up to SSRF vulnerabilities.
+        .redirect(reqwest::redirect::Policy::none())
+        .build()?;
+
     let code = AuthorizationCode::new(code);
     let pkce_code_verifier = PkceCodeVerifier::new(code_verifier.value().to_owned());
 
     let token_response = client
         .exchange_code(code)
+        // Set the PKCE code verifier.
         .set_pkce_verifier(pkce_code_verifier)
-        .request_async(async_http_client)
-        .await
-        .context("Failed to get token response")?;
+        .request_async(&http_client)
+        .await?;
 
     // Get the Discord user info
     let discord_user = reqwest::Client::new()

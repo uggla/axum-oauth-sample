@@ -4,10 +4,10 @@ use self::{
 };
 use crate::constants::COOKIE_AUTH_SESSION;
 use axum::{
+    Extension, Json, Router,
     http::StatusCode,
     response::{ErrorResponse, IntoResponse, Redirect},
     routing::get,
-    Extension, Json, Router,
 };
 use axum_extra::extract::cookie::CookieJar;
 use cookie::Cookie;
@@ -16,6 +16,14 @@ use sqlx::SqlitePool;
 mod auth_discord;
 mod auth_github;
 mod auth_google;
+
+pub struct ClientSettings {
+    client_id: oauth2::ClientId,
+    client_secret: oauth2::ClientSecret,
+    auth_url: oauth2::AuthUrl,
+    token_url: oauth2::TokenUrl,
+    redirect_url: oauth2::RedirectUrl,
+}
 
 pub fn auth_router() -> Router {
     Router::new()

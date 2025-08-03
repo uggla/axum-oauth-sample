@@ -1,11 +1,11 @@
 mod auth;
 
-use askama_axum::IntoResponse;
+use axum::response::IntoResponse;
 use axum::{
-    http::{header, HeaderMap},
+    Router,
+    http::{HeaderMap, header},
     response::Redirect,
     routing::post,
-    Router,
 };
 use axum_extra::extract::CookieJar;
 use cookie::Cookie;

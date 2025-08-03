@@ -1,8 +1,8 @@
-use askama_axum::IntoResponse;
+use axum::Extension;
 use axum::extract::FromRequestParts;
-use axum::http::request::Parts;
 use axum::http::StatusCode;
-use axum::{async_trait, Extension};
+use axum::http::request::Parts;
+use axum::response::IntoResponse;
 use axum_extra::extract::CookieJar;
 use sqlx::SqlitePool;
 
@@ -13,14 +13,14 @@ use crate::models::User;
 #[derive(Debug)]
 pub struct CurrentUser(pub User);
 
+#[derive(Debug)]
 pub struct UnauthorizedUser;
 impl IntoResponse for UnauthorizedUser {
-    fn into_response(self) -> askama_axum::Response {
+    fn into_response(self) -> axum::response::Response {
         StatusCode::UNAUTHORIZED.into_response()
     }
 }
 
-#[async_trait]
 impl<S> FromRequestParts<S> for CurrentUser
 where
     S: Send + Sync,
@@ -62,7 +62,6 @@ where
 #[derive(Debug, Default)]
 pub struct UserTheme(pub Option<Theme>);
 
-#[async_trait]
 impl<S> FromRequestParts<S> for UserTheme
 where
     S: Send + Sync,

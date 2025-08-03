@@ -15,7 +15,7 @@
       <div class="flex flex-row gap-4 items-center">
         {% match user.image_url %}
         {% when Some with (image_url) %}
-        <img alt="{{user.username}}" src="{{image_url}}"
+        <img alt="{{user.username}}" src="/proxy/google_image?url={{image_url}}"
           class="rounded-lg shadow-lg border border-gray-400/50 w-[64px] h-[64px] sm:w-[128px] sm:h-[128px] hover:scale-95 transition-all duration-300" />
 
         {% when None %}
