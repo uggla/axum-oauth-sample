@@ -2,35 +2,23 @@
 
 <!-- Content -->
 {% block content %}
-<div class="w-full h-full pt-20">
-  <div class="flex flex-col items-center w-[min(600px,100%)] gap-4 mx-auto">
-    <div class="w-full">
-      <h4 class="font-mono font-bold text-3xl">Login</h4>
-    </div>
-
-    <div class="p-4 rounded-md shadow-lg border border-gray-300/20 w-full space-y-4">
-      <!-- Google login -->
-      <a class="w-full p-2 rounded-lg border border-gray-300/20 hover:bg-black/10 dark:hover:bg-black/20 flex flex-row items-center gap-4"
-        href="/api/auth/google/login">
-        <img alt="Google Logo" src="/public/images/google-logo.png" width="32px" height="32px" />
-        <span>Login with Google</span>
+<article>
+  <header>
+    <h2>Login</h2>
+  </header>
+  <div style="display: grid; gap: 1rem;">
+      <a role="button" href="/api/auth/google/login" style="padding: 0.5rem 1rem;">
+        <img alt="Google Logo" src="/public/images/google-logo.png" width="32" height="32" style="vertical-align: middle; margin-right: 0.5rem;" />
+        Login with Google
       </a>
-
-      <!-- Github login -->
-      <a class="w-full p-2 rounded-lg border border-gray-300/20 hover:bg-black/10 dark:hover:bg-black/20 flex flex-row items-center gap-4"
-        href="/api/auth/github/login">
-        <img alt="Github Logo" src="/public/images/github-logo.png" width="32px" height="32px"
-          class="dark:invert-0 invert" />
-        <span>Login with Github</span>
+      <a role="button" href="/api/auth/github/login" style="padding: 0.5rem 1rem;">
+        <img alt="Github Logo" src="/public/images/github-logo.png" width="32" height="32" style="vertical-align: middle; margin-right: 0.5rem;" />
+        Login with Github
       </a>
-
-      <!-- Discord login -->
-      <a class="w-full p-2 rounded-lg border border-gray-300/20 hover:bg-black/10 dark:hover:bg-black/20 flex flex-row items-center gap-4"
-        href="/api/auth/discord/login">
-        <img alt="Discord Logo" src="/public/images/discord-logo.png" width="32px" height="32px" />
-        <span>Login with Discord</span>
+      <a role="button" href="/api/auth/discord/login" style="padding: 0.5rem 1rem;">
+        <img alt="Discord Logo" src="/public/images/discord-logo.png" width="32" height="32" style="vertical-align: middle; margin-right: 0.5rem;" />
+        Login with Discord
       </a>
-    </div>
   </div>
-</div>
+</article>
 {% endblock %}
