@@ -11,7 +11,6 @@ This example uses:
 - Axum
 - Askama
 - Sqlx **(with SQlite)**
-- TailwindCSS
 
 And have oauth authentication for these providers:
 
@@ -28,21 +27,19 @@ And have oauth authentication for these providers:
 
 ### Prerequisites
 
-- [node >= 18](https://nodejs.org/en)
 - [sqlx-cli](https://crates.io/crates/sqlx-cli)
-- [pnpm (optional)](https://pnpm.io/installation)
 
 1. Install dependencies
 
 ```bash
-cargo install
-pnpm install # Or remove pnpm-lock.yaml and run `npm install`
+cargo install sqlx-cli
 ```
+
+> This require create a `.env` file similar to `.env.sample`
 
 2. Create database and run migrations
 
 ```bash
-mkdir data
 sqlx database create
 sqlx migrate run
 ```
@@ -50,8 +47,7 @@ sqlx migrate run
 3. Run
 
 ```bash
-npm run tw:watch
-cargo run # In other shell
+cargo run
 ```
 
 ## Docker
@@ -66,7 +62,7 @@ docker build . -t axum-oauth
 docker run -dp 5000:5000 -e HOST="0.0.0.0" -e PORT=5000 -e BASE_URL="http://localhost:5000" --env-file=.env.docker axum-oauth
 ```
 
-> This require create a `.env.docker` file with similar to `.env.sample`
+> This require create a `.env.docker` file similar to `.env.sample`
 
 ## Authentication workflow
 

@@ -1,26 +1,11 @@
 # Use the official Rust 1.74 image as the base image
-FROM rust:1.74 as builder
+FROM rust:1.88 as builder
 
 # Set the working directory in the container
 WORKDIR /app/src
 
 # Install SQLx CLI
-RUN cargo install sqlx-cli@0.7.3
-
-# Install nvm and Node.js 18
-RUN apt-get update && curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash 
-
-ENV NVM_DIR=/root/.nvm
-ENV NODE_VERSION=18.17.0
-RUN . "$NVM_DIR/nvm.sh" && \
-    nvm install ${NODE_VERSION} && \
-    nvm use ${NODE_VERSION} && \
-    nvm alias default ${NODE_VERSION}
-
-ENV PATH="/root/.nvm/versions/node/v${NODE_VERSION}/bin/:${PATH}"
-
-# Check Node.js
-RUN node --version
+RUN cargo install sqlx-cli
 
 # Copy the necessary files for SQLx migrations
 COPY ./migrations ./migrations
@@ -31,9 +16,6 @@ RUN sqlx migrate run --database-url "sqlite:./data/data.db"
 
 # Copy the entire project to the container
 COPY . .
-
-# Run the tw:build script
-RUN npm install && npm run tw:build
 
 # Build the Rust project
 RUN export DATABASE_URL="sqlite:./data/data.db" && cargo build --release

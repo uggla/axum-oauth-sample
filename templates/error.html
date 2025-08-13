@@ -2,11 +2,10 @@
 
 <!-- Content -->
 {% block content %}
-
-<div class="w-full h-full items-center flex flex-row justify-center">
-  <h2 class="font-extralight font-mono text-lg sm:text-3xl text-black/80 dark:text-white/80">
-    {{error.status.as_u16()}} - {{error.message}}
-  </h2>
-</div>
-
+<article>
+  <header>
+    <h2>Error</h2>
+  </header>
+  <p>{{error.status.as_u16()}} - {{error.message}}</p>
+</article>
 {% endblock %}
